@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.log
+*.tmp
+*.tsbuildinfo
+.DS_Store
+.env
+/.eslintcache
+.idea/
+.vscode/
+backend/dist/
+backend/coverage/

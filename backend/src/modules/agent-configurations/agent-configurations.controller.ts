@@ -8,6 +8,7 @@ import {
   Post,
 } from "@nestjs/common";
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -20,7 +21,7 @@ import { AgentConfigurationsService } from "./service/agent-configurations.servi
 import { AgentConfigurationResponseDto } from "./dtos/agent-configuration-response.dto";
 
 @Controller("agent-configurations")
-@ApiTags("agent-configurations")
+@ApiTags("Agent Configurations")
 export class AgentConfigurationsController {
   constructor(
     private readonly agentConfigurationsService: AgentConfigurationsService
@@ -57,6 +58,9 @@ export class AgentConfigurationsController {
   @ApiCreatedResponse({
     description: "Created agent configuration",
     type: AgentConfigurationResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: "Bad Request: Validation failed for creation",
   })
   async create(
     @Body() dto: CreateAgentConfigurationDto

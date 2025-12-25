@@ -23,6 +23,11 @@ enum LlmModel {
   GPT_5_NANO
 }
 
+enum MessageRole {
+  user
+  assistant
+}
+
 
 model AgentConfiguration {
   id           String   @id @default(uuid()) @map("id")
@@ -34,4 +39,32 @@ model AgentConfiguration {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("agent_configurations")
+  conversations Conversation[]
+}
+
+model Conversation{
+  id String @id @default(uuid()) @map("id")
+  agentConfigurationId String @map("agent_configuration_id")
+  agentConfiguration AgentConfiguration @relation(fields: [agentConfigurationId], references: [id], onDelete: Cascade)
+  title String @map("title")
+  
+  lastMessageAt DateTime?
+  messages Message[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([agentConfigurationId], name: "idx_agent_configuration_id")
+  @@map("conversations")
+
+}
+model Message {
+  id String @id @default(uuid()) @map("id")
+  conversationId String @map("conversation_id")
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  role MessageRole @map("role")
+  content String @map("content")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([conversationId, createdAt], name: "messages_conversation_created_at_idx")
+  @@map("messages")
 }

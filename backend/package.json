@@ -70,6 +70,14 @@
       "ts"
     ],
     "rootDir": "src",
+    "moduleNameMapper": {
+      "^generated/(.*)$": "<rootDir>/../generated/$1",
+      "^@generated/(.*)$": "<rootDir>/../generated/$1",
+      "^\\.\\/enums\\.js$": "<rootDir>/../generated/prisma/enums.ts",
+      "^\\.\\/internal/prismaNamespace\\.js$": "<rootDir>/../generated/prisma/internal/prismaNamespace.ts",
+      "^\\.\\/internal/class\\.js$": "<rootDir>/../generated/prisma/internal/class.ts",
+      "^src/(.*)$": "<rootDir>/$1"
+    },
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"

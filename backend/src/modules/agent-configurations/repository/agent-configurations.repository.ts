@@ -1,48 +1,28 @@
 import { Injectable } from "@nestjs/common";
+import { BaseRepository } from "../../../common/repositories/base.repository";
 import { PrismaService } from "../../prisma/prisma.service";
 import type {
   AgentConfiguration,
   Prisma,
 } from "../../../../generated/prisma/client";
 
+type AgentDelegate = Prisma.AgentConfigurationDelegate;
+
 @Injectable()
-export class AgentConfigurationsRepository {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async findAll(): Promise<AgentConfiguration[]> {
-    return await this.prisma.agentConfiguration.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+export class AgentConfigurationsRepository extends BaseRepository<
+  AgentConfiguration,
+  AgentDelegate
+> {
+  constructor(protected readonly prisma: PrismaService) {
+    super(prisma);
   }
 
-  async findById(id: string): Promise<AgentConfiguration | null> {
-    return await this.prisma.agentConfiguration.findUnique({ where: { id } });
-  }
-
-  async create(
-    data: Prisma.AgentConfigurationCreateInput
-  ): Promise<AgentConfiguration> {
-    return await this.prisma.agentConfiguration.create({ data });
-  }
-
-  async update(
-    id: string,
-    data: Prisma.AgentConfigurationUpdateInput
-  ): Promise<AgentConfiguration> {
-    return await this.prisma.agentConfiguration.update({
-      where: { id },
-      data,
-    });
-  }
-
-  async delete(id: string): Promise<AgentConfiguration> {
-    return await this.prisma.agentConfiguration.delete({ where: { id } });
+  protected get model(): AgentDelegate {
+    return this.prisma.agentConfiguration;
   }
 
   async existsById(id: string): Promise<boolean> {
-    const count = await this.prisma.agentConfiguration.count({
-      where: { id },
-    });
+    const count = await this.model.count({ where: { id } });
     return count > 0;
   }
 }

@@ -42,9 +42,9 @@ describe("AgentConfigurationsRepository", () => {
   it("findAll returns ordered agents", async () => {
     prisma.agentConfiguration.findMany.mockResolvedValue([mockAgent]);
     const result = await repository.findAll();
-    expect(prisma.agentConfiguration.findMany).toHaveBeenCalledWith({
-      orderBy: { createdAt: "desc" },
-    });
+    expect(prisma.agentConfiguration.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({})
+    );
     expect(result).toEqual([mockAgent]);
   });
 

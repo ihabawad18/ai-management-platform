@@ -1,4 +1,4 @@
-import { LlmModel } from "../enums/llm-model.enum";
+import { LlmModel } from "generated/prisma/enums";
 
 export const LLM_MODEL_MAP: Record<LlmModel, string> = {
   [LlmModel.GPT_5_2]: "gpt-5.2",

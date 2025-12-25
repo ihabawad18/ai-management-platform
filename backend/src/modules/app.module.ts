@@ -5,6 +5,8 @@ import { AppService } from "./app.service";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AgentConfigurationsModule } from "./agent-configurations/agent-configurations.module";
 import { LlmModule } from './llm/llm.module';
+import { ConversationModule } from './conversation/conversation.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { LlmModule } from './llm/llm.module';
     PrismaModule,
     AgentConfigurationsModule,
     LlmModule,
+    ConversationModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

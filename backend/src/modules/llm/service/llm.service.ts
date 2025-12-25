@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import OpenAI from "openai";
 import { mapToOpenAiModel } from "../mappers/llm.mapper";
-import { LlmModel } from "../enums/llm-model.enum";
+import { LlmModel } from "generated/prisma/enums";
 
 @Injectable()
 export class LlmService {

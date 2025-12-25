@@ -39,7 +39,7 @@ describe("LlmService", () => {
       model: LlmModel.GPT_5_2,
     });
 
-    expect(result).toBe("Hello from mock LLM");
+    expect(result).toEqual({ output_text: "Hello from mock LLM" });
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(openai.responses.create).toHaveBeenCalled();
   });

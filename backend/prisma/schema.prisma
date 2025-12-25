@@ -33,13 +33,14 @@ model AgentConfiguration {
   id           String   @id @default(uuid()) @map("id")
   name         String   @map("name")
   systemPrompt String   @map("system_prompt")
-  model        LlmModel   @map("model")
+  model        LlmModel @map("model")
 
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("agent_configurations")
   conversations Conversation[]
+  usageMetrics UsageMetrics?
 }
 
 model Conversation{
@@ -67,4 +68,19 @@ model Message {
   createdAt DateTime @default(now()) @map("created_at")
   @@index([conversationId, createdAt], name: "messages_conversation_created_at_idx")
   @@map("messages")
+}
+
+model UsageMetrics {
+  id                   String  @id @default(uuid()) @map("id")
+  agentConfigurationId String  @unique @map("agent_configuration_id")
+  messageCount         Int     @default(0) @map("message_count")
+  llmCalls             Int     @default(0) @map("llm_calls")
+  totalTokens          Int     @default(0) @map("total_tokens")
+  totalLatencyMs       Int     @default(0) @map("total_latency_ms")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  agentConfiguration AgentConfiguration @relation(fields: [agentConfigurationId], references: [id], onDelete: Cascade)
+
+  @@index([agentConfigurationId], name: "idx_usage_metrics_agent_configuration_id")
+  @@map("usage_metrics")
 }

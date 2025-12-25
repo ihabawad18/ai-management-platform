@@ -1,21 +1,68 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { NotFoundException } from "@nestjs/common";
 import { MessageRole } from "../../../../generated/prisma/client";
+import { LlmModel } from "../../../../generated/prisma/enums";
 import { MessageService } from "./message.service";
+import type { MessageRepository } from "../repository/message.repository";
+import type { ConversationRepository } from "../../conversation/repository/conversation.repository";
+import type { AgentConfigurationsRepository } from "../../agent-configurations/repository/agent-configurations.repository";
+import type { LlmService } from "../../llm/service/llm.service";
+import type { UsageMetricsService } from "../../metrics/service/usage-metrics.service";
 
 describe("MessageService", () => {
-  const messageRepository = {
-    create: jest.fn(),
-    findByConversation: jest.fn(),
-    findPaginatedByConversation: jest.fn(),
+  type WithoutThis<T> = T extends (this: any, ...args: infer A) => infer R
+    ? (...args: A) => R
+    : T;
+  const createMockFn = <T extends (...args: unknown[]) => unknown>() =>
+    jest.fn<ReturnType<T>, Parameters<T>, void>();
+
+  const messageRepository: {
+    create: jest.MockedFunction<WithoutThis<MessageRepository["create"]>>;
+    findByConversation: jest.MockedFunction<
+      WithoutThis<MessageRepository["findByConversation"]>
+    >;
+    findPaginatedByConversation: jest.MockedFunction<
+      WithoutThis<MessageRepository["findPaginatedByConversation"]>
+    >;
+  } = {
+    create: createMockFn<WithoutThis<MessageRepository["create"]>>(),
+    findByConversation:
+      createMockFn<WithoutThis<MessageRepository["findByConversation"]>>(),
+    findPaginatedByConversation:
+      createMockFn<
+        WithoutThis<MessageRepository["findPaginatedByConversation"]>
+      >(),
   };
-  const conversationRepository = {
-    findById: jest.fn(),
+  const conversationRepository: {
+    findById: jest.MockedFunction<
+      WithoutThis<ConversationRepository["findById"]>
+    >;
+  } = {
+    findById: createMockFn<WithoutThis<ConversationRepository["findById"]>>(),
   };
-  const agentConfigurationsRepository = {
-    findById: jest.fn(),
+  const agentConfigurationsRepository: {
+    findById: jest.MockedFunction<
+      WithoutThis<AgentConfigurationsRepository["findById"]>
+    >;
+  } = {
+    findById:
+      createMockFn<WithoutThis<AgentConfigurationsRepository["findById"]>>(),
   };
-  const llmService = {
-    generateResponse: jest.fn(),
+  const llmService: {
+    generateResponse: jest.MockedFunction<
+      WithoutThis<LlmService["generateResponse"]>
+    >;
+  } = {
+    generateResponse:
+      createMockFn<WithoutThis<LlmService["generateResponse"]>>(),
+  };
+  const usageMetricsService: {
+    recordInteraction: jest.MockedFunction<
+      WithoutThis<UsageMetricsService["recordInteraction"]>
+    >;
+  } = {
+    recordInteraction:
+      createMockFn<WithoutThis<UsageMetricsService["recordInteraction"]>>(),
   };
 
   let service: MessageService;
@@ -26,7 +73,8 @@ describe("MessageService", () => {
       messageRepository as any,
       conversationRepository as any,
       agentConfigurationsRepository as any,
-      llmService as any
+      llmService as any,
+      usageMetricsService as any
     );
   });
 
@@ -42,19 +90,25 @@ describe("MessageService", () => {
     conversationRepository.findById.mockResolvedValue({
       id: "c1",
       agentConfigurationId: "a1",
-    });
+    } as any);
     agentConfigurationsRepository.findById.mockResolvedValue({
       id: "a1",
       systemPrompt: "You are helpful",
-      model: "gpt-test",
-    });
+      model: LlmModel.GPT_5_2,
+    } as any);
     messageRepository.create
-      .mockResolvedValueOnce({ id: "m-user", role: MessageRole.user })
-      .mockResolvedValueOnce({ id: "m-assistant", role: MessageRole.assistant });
+      .mockResolvedValueOnce({ id: "m-user", role: MessageRole.user } as any)
+      .mockResolvedValueOnce({
+        id: "m-assistant",
+        role: MessageRole.assistant,
+      } as any);
     messageRepository.findByConversation.mockResolvedValue([
-      { role: MessageRole.user, content: "hello" },
+      { role: MessageRole.user, content: "hello" } as any,
     ]);
-    llmService.generateResponse.mockResolvedValue("assistant reply");
+    llmService.generateResponse.mockResolvedValue({
+      output_text: "assistant reply",
+      usage: { total_tokens: 42 },
+    } as any);
 
     const result = await service.addNewMessage({
       conversationId: "c1",
@@ -72,13 +126,22 @@ describe("MessageService", () => {
     expect(llmService.generateResponse).toHaveBeenCalledWith({
       systemPrompt: "You are helpful",
       userMessage: "user: hello",
-      model: "gpt-test",
+      model: LlmModel.GPT_5_2,
     });
     expect(messageRepository.create).toHaveBeenNthCalledWith(2, {
       conversation: { connect: { id: "c1" } },
       role: MessageRole.assistant,
       content: "assistant reply",
     });
+    expect(usageMetricsService.recordInteraction).toHaveBeenCalledTimes(1);
+    const interaction = usageMetricsService.recordInteraction.mock.calls[0][0];
+    expect(interaction).toMatchObject({
+      agentConfigurationId: "a1",
+      messageCount: 2,
+      llmCalls: 1,
+      totalTokens: 42,
+    });
+    expect(interaction.totalLatencyMs).toBeGreaterThanOrEqual(0);
     expect(result.userMessage.id).toBe("m-user");
     expect(result.assistantMessage.id).toBe("m-assistant");
   });
@@ -92,9 +155,17 @@ describe("MessageService", () => {
   });
 
   it("getMessagesByConversationId returns paginated messages when conversation exists", async () => {
-    conversationRepository.findById.mockResolvedValue({ id: "c1" });
+    conversationRepository.findById.mockResolvedValue({ id: "c1" } as any);
     messageRepository.findPaginatedByConversation.mockResolvedValue({
-      items: [{ id: "m1" }],
+      items: [
+        {
+          id: "m1",
+          conversationId: "",
+          role: "user",
+          content: "",
+          createdAt: new Date(),
+        },
+      ],
       meta: { total: 1, totalPages: 1, currentPage: 1, pageSize: 10 },
     });
 

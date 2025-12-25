@@ -5,6 +5,8 @@ import { MessageRepository } from "../repository/message.repository";
 import { ConversationRepository } from "../../conversation/repository/conversation.repository";
 import { LlmService } from "../../llm/service/llm.service";
 import { AgentConfigurationsRepository } from "../../agent-configurations/repository/agent-configurations.repository";
+import { UsageMetricsService } from "src/modules/metrics/service/usage-metrics.service";
+import OpenAI from "openai";
 
 @Injectable()
 export class MessageService {
@@ -12,7 +14,8 @@ export class MessageService {
     private readonly messageRepository: MessageRepository,
     private readonly conversationRepository: ConversationRepository,
     private readonly agentConfigurationsRepository: AgentConfigurationsRepository,
-    private readonly llmService: LlmService
+    private readonly llmService: LlmService,
+    private readonly usageMetricsService: UsageMetricsService
   ) {}
 
   async addNewMessage(params: {
@@ -48,16 +51,27 @@ export class MessageService {
       { takeLast: 10 }
     );
 
-    const assistantReply = await this.llmService.generateResponse({
-      systemPrompt: agent.systemPrompt,
-      userMessage: this.buildPromptFromHistory(history),
-      model: agent.model,
-    });
+    const llmStart = Date.now();
+    const assistantReply: OpenAI.Responses.Response =
+      await this.llmService.generateResponse({
+        systemPrompt: agent.systemPrompt,
+        userMessage: this.buildPromptFromHistory(history),
+        model: agent.model,
+      });
+    const llmDurationMs = Date.now() - llmStart;
 
     const assistantMessage = await this.messageRepository.create({
       conversation: { connect: { id: params.conversationId } },
       role: MessageRole.assistant,
-      content: assistantReply,
+      content: assistantReply.output_text,
+    });
+
+    await this.usageMetricsService.recordInteraction({
+      agentConfigurationId: conversation.agentConfigurationId,
+      messageCount: 2,
+      llmCalls: 1,
+      totalTokens: assistantReply.usage?.total_tokens ?? 0,
+      totalLatencyMs: llmDurationMs,
     });
 
     return { userMessage, assistantMessage };

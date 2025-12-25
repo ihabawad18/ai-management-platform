@@ -6,9 +6,10 @@ import { PrismaModule } from "../prisma/prisma.module";
 import { ConversationRepository } from "../conversation/repository/conversation.repository";
 import { AgentConfigurationsRepository } from "../agent-configurations/repository/agent-configurations.repository";
 import { LlmModule } from "../llm/llm.module";
+import { MetricsModule } from "../metrics/metrics.module";
 
 @Module({
-  imports: [PrismaModule, LlmModule],
+  imports: [PrismaModule, LlmModule, MetricsModule],
   controllers: [MessageController],
   providers: [
     MessageService,

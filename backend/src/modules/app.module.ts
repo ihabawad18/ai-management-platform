@@ -7,6 +7,7 @@ import { AgentConfigurationsModule } from "./agent-configurations/agent-configur
 import { LlmModule } from './llm/llm.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { MessageModule } from './message/message.module';
+import { MetricsModule } from "./metrics/metrics.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MessageModule } from './message/message.module';
     LlmModule,
     ConversationModule,
     MessageModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

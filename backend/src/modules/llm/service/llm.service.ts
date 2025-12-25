@@ -11,7 +11,7 @@ export class LlmService {
     systemPrompt: string;
     userMessage: string;
     model: LlmModel;
-  }): Promise<string> {
+  }): Promise<OpenAI.Responses.Response> {
     try {
       const response = await this.openAiService.responses.create({
         model: mapToOpenAiModel(params.model),
@@ -21,7 +21,7 @@ export class LlmService {
         ],
       });
 
-      return response.output_text ?? "";
+      return response;
     } catch (error) {
       console.error("OpenAI API error:", error);
       throw new InternalServerErrorException(

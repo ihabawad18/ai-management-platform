@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { ConversationRepository } from "./conversation.repository";
 
 describe("ConversationRepository", () => {

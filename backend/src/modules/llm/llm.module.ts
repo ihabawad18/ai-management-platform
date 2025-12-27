@@ -1,8 +1,10 @@
 import { Module } from "@nestjs/common";
 import { LlmService } from "./service/llm.service";
 import OpenAI from "openai";
+import { LlmController } from "./llm.controller";
 
 @Module({
+  controllers: [LlmController],
   providers: [
     {
       provide: OpenAI,

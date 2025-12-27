@@ -507,6 +507,11 @@ export default function Chat() {
                     <Loader2 className="h-5 w-5 animate-spin text-blue-600 mr-2" />
                     Loading conversations...
                   </div>
+                ) : conversations.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-sm text-gray-500">
+                    <MessageSquare className="h-6 w-6 text-gray-400 mb-2" />
+                    No conversations yet.
+                  </div>
                 ) : (
                   conversations.map((c) => (
                     <ConversationButton key={c.id} conversation={c} />

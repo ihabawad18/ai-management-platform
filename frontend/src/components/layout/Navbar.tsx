@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Settings, LayoutDashboard, MessageSquare } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
@@ -7,16 +7,11 @@ type Page = "dashboard" | "agents" | "chat";
 
 const Navbar = () => {
   const location = useLocation();
-  const [currentPage, setCurrentPage] = useState<Page>("dashboard");
 
-  useEffect(() => {
-    if (location.pathname.startsWith("/agents")) {
-      setCurrentPage("agents");
-    } else if (location.pathname.startsWith("/chat")) {
-      setCurrentPage("chat");
-    } else {
-      setCurrentPage("dashboard");
-    }
+  const currentPage: Page = useMemo(() => {
+    if (location.pathname.startsWith("/agents")) return "agents";
+    if (location.pathname.startsWith("/chat")) return "chat";
+    return "dashboard";
   }, [location.pathname]);
 
   return (
@@ -29,18 +24,16 @@ const Navbar = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">
-                Agent Management Platform
+                AI Platform Management
               </h1>
               <p className="text-blue-100 text-sm">
-                Manage agents, monitor performance, and chat in one place.
+                Manage AI agents configurations, monitor performance, and chat
+                in one place.
               </p>
             </div>
           </div>
           <nav className="self-start lg:self-auto">
-            <Tabs
-              value={currentPage}
-              onValueChange={(v) => setCurrentPage(v as Page)}
-            >
+            <Tabs value={currentPage}>
               <TabsList className="bg-blue-700 border-2 border-blue-500 p-1">
                 <TabsTrigger
                   value="dashboard"
@@ -82,4 +75,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

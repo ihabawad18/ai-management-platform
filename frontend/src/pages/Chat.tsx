@@ -198,7 +198,8 @@ export default function Chat() {
           pageSize: messagesPageSize,
         }
       );
-      await new Promise((res) => setTimeout(res, 3000));
+      // just for demo purposes, simulate network delay
+      await new Promise((res) => setTimeout(res, 1000));
 
       const mapped = mapMessages(data.items);
       setConversations((prev) =>

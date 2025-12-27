@@ -7,9 +7,36 @@ import type {
 } from "@/types/models/Conversation.model";
 import type { MessageModel } from "@/types/models/Message.model";
 import type { Paginated } from "@/types/models/Pagination.model";
+import { AxiosError } from "axios";
 
-const toErrorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "Unknown error";
+export class ApiError extends Error {
+  messages: string[];
+  status?: number;
+
+  constructor(messages: string[], status?: number) {
+    super(messages.join(", "));
+    this.messages = messages;
+    this.status = status;
+  }
+}
+
+export const toErrorMessages = (error: unknown): string[] => {
+  if (error instanceof ApiError) {
+    return error.messages;
+  }
+  if (error instanceof AxiosError) {
+    const message = error?.response?.data?.message;
+    if (Array.isArray(message)) {
+      return message.map(String);
+    }
+    if (typeof message === "string") {
+      return [message];
+    }
+  }
+  return ["Unknown error"];
+};
+
+const toErrorMessage = (error: unknown) => toErrorMessages(error).join(", ");
 
 const unwrap = <T>(response: { data: unknown }): T => {
   const { data } = response;
@@ -19,17 +46,19 @@ const unwrap = <T>(response: { data: unknown }): T => {
   return data as T;
 };
 
-export const getAgentConfigurations = async (): Promise<
-  AgentModel[]
-> => {
+export const getAgentConfigurations = async (): Promise<AgentModel[]> => {
   try {
     const response = await axiosClient.get<AgentModel[]>(
       "/agent-configurations"
     );
     return unwrap<AgentModel[]>(response);
   } catch (error) {
-    throw new Error(
-      `Failed to fetch agent configurations: ${toErrorMessage(error)}`
+    const messages = toErrorMessages(error);
+    const status =
+      error instanceof AxiosError ? error.response?.status : undefined;
+    throw new ApiError(
+      [`Failed to fetch agent configurations: ${messages.join(", ")}`],
+      status
     );
   }
 };
@@ -43,8 +72,12 @@ export const getAgentConfiguration = async (
     );
     return unwrap<AgentModel>(response);
   } catch (error) {
-    throw new Error(
-      `Failed to fetch agent configuration: ${toErrorMessage(error)}`
+    const messages = toErrorMessages(error);
+    const status =
+      error instanceof AxiosError ? error.response?.status : undefined;
+    throw new ApiError(
+      [`Failed to fetch agent configuration: ${messages.join(", ")}`],
+      status
     );
   }
 };
@@ -59,17 +92,16 @@ export const createAgentConfiguration = async (
     );
     return unwrap<AgentModel>(response);
   } catch (error) {
-    throw new Error(
-      `Failed to create agent configuration: ${toErrorMessage(error)}`
-    );
+    const messages = toErrorMessages(error);
+    const status =
+      error instanceof AxiosError ? error.response?.status : undefined;
+    throw new ApiError(messages, status);
   }
 };
 
 export const updateAgentConfiguration = async (
   id: string,
-  payload: Partial<
-    Pick<AgentModel, "name" | "model" | "systemPrompt">
-  >
+  payload: Partial<Pick<AgentModel, "name" | "model" | "systemPrompt">>
 ): Promise<AgentModel> => {
   try {
     const response = await axiosClient.patch<AgentModel>(
@@ -78,9 +110,10 @@ export const updateAgentConfiguration = async (
     );
     return unwrap<AgentModel>(response);
   } catch (error) {
-    throw new Error(
-      `Failed to update agent configuration: ${toErrorMessage(error)}`
-    );
+    const messages = toErrorMessages(error);
+    const status =
+      error instanceof AxiosError ? error.response?.status : undefined;
+    throw new ApiError(messages, status);
   }
 };
 
@@ -88,8 +121,12 @@ export const deleteAgentConfiguration = async (id: string): Promise<void> => {
   try {
     await axiosClient.delete(`/agent-configurations/${id}`);
   } catch (error) {
-    throw new Error(
-      `Failed to delete agent configuration: ${toErrorMessage(error)}`
+    const messages = toErrorMessages(error);
+    const status =
+      error instanceof AxiosError ? error.response?.status : undefined;
+    throw new ApiError(
+      [`Failed to delete agent configuration: ${messages.join(", ")}`],
+      status
     );
   }
 };
@@ -101,10 +138,7 @@ export const getConversations = async (
   try {
     const response = await axiosClient.get<
       Paginated<ConversationListItemModel>
-    >(
-      `/agents/${agentId}/conversations`,
-      { params }
-    );
+    >(`/agents/${agentId}/conversations`, { params });
     return unwrap<Paginated<ConversationListItemModel>>(response);
   } catch (error) {
     throw new Error(`Failed to fetch conversations: ${toErrorMessage(error)}`);
@@ -121,7 +155,7 @@ export const createConversation = async (payload: {
       payload
     );
     return unwrap<ConversationModel>(response);
-  } catch (error) {
+  } catch (error: AxiosError | unknown) {
     throw new Error(`Failed to create conversation: ${toErrorMessage(error)}`);
   }
 };
@@ -157,6 +191,7 @@ export const sendMessage = async (
 
     throw new Error("Unexpected send message response shape");
   } catch (error) {
+    console.error("Error in sendMessage:", error);
     throw new Error(`Failed to send message: ${toErrorMessage(error)}`);
   }
 };

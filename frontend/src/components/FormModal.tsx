@@ -55,6 +55,7 @@ type Props<T extends object> = {
   confirmButtonClassName?: string;
   loading?: boolean;
   confirmDisabled?: boolean;
+  errors?: string[];
 };
 
 const FormModal = <T extends object>({
@@ -71,6 +72,7 @@ const FormModal = <T extends object>({
   confirmButtonClassName,
   loading = false,
   confirmDisabled = false,
+  errors = [],
 }: Props<T>) => (
   <Dialog
     open={open}
@@ -86,6 +88,13 @@ const FormModal = <T extends object>({
       </DialogHeader>
 
       <div className="grid gap-4 py-4">
+        {errors.length > 0 && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {errors.map((error) => (
+              <div key={error}>{error}</div>
+            ))}
+          </div>
+        )}
         {fields.map((field) => {
           const value = (values as Record<string, unknown>)[
             field.name as string

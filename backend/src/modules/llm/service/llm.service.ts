@@ -1,5 +1,10 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
-import OpenAI from "openai";
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import OpenAI, { APIError } from "openai";
 import { mapToOpenAiModel } from "../mappers/llm.mapper";
 import { LlmModel } from "generated/prisma/enums";
 
@@ -22,11 +27,18 @@ export class LlmService {
       });
 
       return response;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("OpenAI API error:", error);
-      throw new InternalServerErrorException(
-        "Failed to communicate with LLM provider."
-      );
+      if (error instanceof APIError && error.status === 429) {
+        throw new HttpException(
+          "AI service is temporarily busy. Please try again.",
+          HttpStatus.TOO_MANY_REQUESTS
+        );
+      } else {
+        throw new InternalServerErrorException(
+          "Failed to communicate with LLM provider."
+        );
+      }
     }
   }
 }

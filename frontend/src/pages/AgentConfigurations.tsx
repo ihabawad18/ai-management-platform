@@ -12,6 +12,8 @@ import {
   deleteAgentConfiguration,
   getAgentConfigurations,
   updateAgentConfiguration,
+  ApiError,
+  toErrorMessages,
 } from "@/services/ApiService";
 import type { AgentUI } from "@/types/components/AgentCard.types";
 
@@ -24,6 +26,7 @@ export default function AgentConfigurations() {
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<AgentUI>>({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [formErrors, setFormErrors] = useState<string[]>([]);
   const itemsPerPage = 4;
   const [listLoading, setListLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -58,6 +61,7 @@ export default function AgentConfigurations() {
   const handleEdit = (agent: AgentUI) => {
     setEditingAgent(agent);
     setFormData(agent);
+    setFormErrors([]);
   };
 
   const handleCreate = () => {
@@ -67,6 +71,7 @@ export default function AgentConfigurations() {
       modelName: llmModels[0] ?? "GPT_4O",
       systemPrompt: "",
     });
+    setFormErrors([]);
   };
 
   const handleSave = async () => {
@@ -88,7 +93,11 @@ export default function AgentConfigurations() {
           },
         ]);
         setIsCreating(false);
+        setFormErrors([]);
       } catch (e) {
+        const messages =
+          e instanceof ApiError ? e.messages : toErrorMessages(e);
+        setFormErrors(messages);
         console.error("Failed to create agent configuration", e);
       } finally {
         setActionLoading(false);
@@ -114,7 +123,11 @@ export default function AgentConfigurations() {
           )
         );
         setEditingAgent(null);
+        setFormErrors([]);
       } catch (e) {
+        const messages =
+          e instanceof ApiError ? e.messages : toErrorMessages(e);
+        setFormErrors(messages);
         console.error("Failed to update agent configuration", e);
       } finally {
         setActionLoading(false);
@@ -127,6 +140,7 @@ export default function AgentConfigurations() {
     setEditingAgent(null);
     setIsCreating(false);
     setFormData({});
+    setFormErrors([]);
   };
 
   const handleDelete = async (id: string) => {
@@ -259,6 +273,7 @@ export default function AgentConfigurations() {
         confirmText={isCreating ? "Create" : "Save Changes"}
         loading={actionLoading}
         confirmDisabled={!isDirty}
+        errors={formErrors}
       />
     </div>
   );

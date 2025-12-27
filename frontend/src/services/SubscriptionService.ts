@@ -10,7 +10,7 @@ const subscribeSSE = <T>({ url, onMessage, onError }: SubscribeParams<T>) => {
   source.onmessage = (event) => {
     try {
       const parsed = JSON.parse(event.data);
-      onMessage(parsed.data);
+      onMessage(parsed.data ?? parsed);
     } catch {
       onMessage(event.data);
     }

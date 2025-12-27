@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Message, MessageRole } from "../../../../generated/prisma/client";
 import { PaginatedResult } from "src/common/dtos/paginated-result.dto";
@@ -65,6 +66,11 @@ export class MessageService {
       role: MessageRole.assistant,
       content: assistantReply.output_text,
     });
+
+    await this.conversationRepository.updateLastMessageAt(
+      params.conversationId,
+      assistantMessage.createdAt
+    );
 
     await this.usageMetricsService.recordInteraction({
       agentConfigurationId: conversation.agentConfigurationId,

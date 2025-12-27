@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import type { AgentConfig } from "@/types/models/AgentModel";
-import type { Conversation } from "@/types/models/ConversationModel";
+import type { AgentModel } from "@/types/models/Agent.model";
+import type { ConversationModel } from "@/types/models/Conversation.model";
 
 export interface ConversationsContextProps {
-  conversations: Conversation[];
-  createConversation: (title: string, agentId: string) => Conversation;
+  conversations: ConversationModel[];
+  createConversation: (title: string, agentId: string) => ConversationModel;
   sendMessage: (conversationId: string, content: string) => void;
-  startConversationForAgent: (agent: AgentConfig) => Conversation;
+  startConversationForAgent: (agent: AgentModel) => ConversationModel;
 }
 
 export interface ConversationsProviderProps {

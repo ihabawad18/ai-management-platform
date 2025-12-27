@@ -1,3 +1,15 @@
+import React, { useMemo } from "react";
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip as ChartTooltip,
+  Legend,
+  type ChartOptions,
+  type ChartData,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
 import {
   Card,
   CardContent,
@@ -5,109 +17,102 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/Card";
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Cell,
-} from "recharts";
 
-type DataPoint = { name: string; value: number };
+type DataPoint = { id?: string; name: string; value: number };
 
 type Props = {
   title: string;
   description: string;
   data: DataPoint[];
   barColors: string[];
-  valueFormatter?: (value: number) => string;
   yTickFormatter?: (value: number) => string;
 };
 
-const defaultFormatter = (value: number) => value.toString();
+ChartJS.register(BarElement, CategoryScale, LinearScale, ChartTooltip, Legend);
 
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-  formatter,
-}: {
-  active?: boolean;
-  payload?: ReadonlyArray<{ value: number }>;
-  label?: string | number;
-  formatter?: (v: number) => string;
-}) => {
-  if (!active || !payload?.length) return null;
-  const value = payload[0].value;
-  const formattedValue = formatter ? formatter(value) : value;
-
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg shadow-slate-900/10">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        {label}
-      </div>
-      <div className="mt-1 text-base font-semibold text-slate-900">
-        {formattedValue}
-      </div>
-    </div>
-  );
-};
-
-const BarChartCard = ({
+export default function BarChartCard({
   title,
   description,
   data,
   barColors,
-  valueFormatter,
   yTickFormatter,
-}: Props) => (
-  <Card className="border-2 bg-white/80 backdrop-blur">
-    <CardHeader>
-      <CardTitle className="text-lg">{title}</CardTitle>
-      <CardDescription>{description}</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <ResponsiveContainer width="100%" height={250}>
-        <BarChart data={data}>
-          <XAxis
-            dataKey="name"
-            stroke="#6b7280"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-          />
-          <YAxis
-            stroke="#6b7280"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={yTickFormatter ?? defaultFormatter}
-          />
-          <Tooltip
-            cursor={{ fill: "rgba(59, 130, 246, 0.08)" }}
-            content={(props) => (
-              <CustomTooltip
-                {...props}
-                formatter={valueFormatter ?? defaultFormatter}
-              />
-            )}
-            wrapperStyle={{ outline: "none" }}
-          />
-          <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-            {data.map((entry, index) => (
-              <Cell
-                key={`cell-${entry.name}-${index}`}
-                fill={barColors[index % barColors.length]}
-                className="transition-all duration-200 hover:opacity-80"
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </CardContent>
-  </Card>
-);
+}: Props) {
+  const chartData: ChartData<"bar", number[], string> = useMemo(() => {
+    const labels = data.map((d) => d.name);
+    const values = data.map((d) => d.value);
+    return {
+      labels,
+      datasets: [
+        {
+          label: description,
+          data: values,
+          backgroundColor: labels.map(
+            (_: string, idx: number) => barColors[idx % barColors.length]
+          ),
+          borderRadius: 6,
+          borderSkipped: false,
+        },
+      ],
+    };
+  }, [data, barColors, description]);
 
-export default BarChartCard;
+  const options: ChartOptions<"bar"> = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const value =
+                typeof ctx.parsed.y === "number" ? ctx.parsed.y : ctx.parsed;
+              const rounded =
+                typeof value === "number" ? Math.round(value) : value;
+              return yTickFormatter
+                ? yTickFormatter(rounded as number)
+                : String(rounded);
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { maxRotation: 0, minRotation: 0, font: { size: 12 } },
+        },
+        y: {
+          grid: { color: "rgba(0,0,0,0.05)" },
+          ticks: {
+            callback: function (val: string | number) {
+              const num = Number(val);
+              return yTickFormatter ? yTickFormatter(num) : String(val);
+            },
+            font: { size: 11 },
+          },
+        },
+      },
+    }),
+    [yTickFormatter]
+  );
+
+  return (
+    <Card className="border-2 bg-white min-w-0">
+      <CardHeader>
+        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent className="min-w-0">
+        {data.length === 0 ? (
+          <div className="h-64 flex items-center justify-center text-sm text-slate-500">
+            Waiting for data…
+          </div>
+        ) : (
+          <div className="h-64 min-h-[240px] w-full min-w-0">
+            <Bar data={chartData} options={options} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

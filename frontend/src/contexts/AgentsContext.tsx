@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import type { AgentConfig } from "@/types/models/AgentModel";
-import { mockAgentConfigs } from "@/lib/mockData";
+import type { AgentModel } from "@/types/models/Agent.model";
 import type {
   AgentsContextProps,
   AgentsProviderProps,
@@ -14,9 +13,9 @@ const AgentsContext = createContext<AgentsContextProps>(
 export const useAgents = () => useContext(AgentsContext);
 
 export const AgentsProvider: React.FC<AgentsProviderProps> = ({ children }) => {
-  const [agents, setAgents] = useState<AgentConfig[]>(mockAgentConfigs);
+  const [agents, setAgents] = useState<AgentModel[]>([]);
 
-  const updateAgent = (agent: AgentConfig) => {
+  const updateAgent = (agent: AgentModel) => {
     setAgents((prev) =>
       prev.map((a) => (a.id === agent.id ? { ...a, ...agent } : a))
     );
@@ -26,8 +25,8 @@ export const AgentsProvider: React.FC<AgentsProviderProps> = ({ children }) => {
     setAgents((prev) => prev.filter((a) => a.id !== id));
   };
 
-  const createAgent = (agent: Omit<AgentConfig, "id">) => {
-    const newAgent: AgentConfig = { ...agent, id: crypto.randomUUID() };
+  const createAgent = (agent: Omit<AgentModel, "id">) => {
+    const newAgent: AgentModel = { ...agent, id: crypto.randomUUID() };
     setAgents((prev) => [...prev, newAgent]);
     return newAgent;
   };

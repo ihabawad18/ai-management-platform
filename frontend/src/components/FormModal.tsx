@@ -53,6 +53,8 @@ type Props<T extends object> = {
   confirmText?: string;
   cancelText?: string;
   confirmButtonClassName?: string;
+  loading?: boolean;
+  confirmDisabled?: boolean;
 };
 
 const FormModal = <T extends object>({
@@ -67,8 +69,16 @@ const FormModal = <T extends object>({
   confirmText = "Save",
   cancelText = "Cancel",
   confirmButtonClassName,
+  loading = false,
+  confirmDisabled = false,
 }: Props<T>) => (
-  <Dialog open={open} onOpenChange={onClose}>
+  <Dialog
+    open={open}
+    onOpenChange={(isOpen) => {
+      if (loading) return;
+      if (!isOpen) onClose();
+    }}
+  >
     <DialogContent className="sm:max-w-[600px]">
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
@@ -151,18 +161,24 @@ const FormModal = <T extends object>({
       </div>
 
       <DialogFooter>
-        <Button variant="outline" onClick={onClose} className="cursor-pointer">
+        <Button
+          variant="outline"
+          onClick={onClose}
+          className="cursor-pointer"
+          disabled={loading}
+        >
           {cancelText}
         </Button>
         <Button
           onClick={onSave}
+          disabled={loading || confirmDisabled}
           className={cn(
             confirmButtonClassName ??
               "bg-blue-600 hover:bg-blue-700 text-white",
             "cursor-pointer"
           )}
         >
-          {confirmText}
+          {loading ? "Loading..." : confirmText}
         </Button>
       </DialogFooter>
     </DialogContent>

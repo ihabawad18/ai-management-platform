@@ -45,6 +45,7 @@ export class ConversationService {
     const conversation = await this.conversationRepository.create({
       agentConfigurationId: body.agentId,
       title: body.title,
+      lastMessageAt: new Date(),
     });
     return conversation;
   }

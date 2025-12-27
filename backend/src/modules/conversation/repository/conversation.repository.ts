@@ -31,7 +31,10 @@ export class ConversationRepository extends BaseRepository<
       where: { agentConfigurationId },
       page,
       pageSize,
-      orderBy: [{ lastMessageAt: "desc" }, { createdAt: "desc" }],
+      orderBy: [
+        { lastMessageAt: { sort: "desc", nulls: "last" } },
+        { createdAt: "desc" },
+      ],
       include: {
         messages: {
           orderBy: { createdAt: "desc" },
@@ -63,5 +66,15 @@ export class ConversationRepository extends BaseRepository<
       where: { id: agentConfigurationId },
     });
     return count > 0;
+  }
+
+  async updateLastMessageAt(
+    conversationId: string,
+    lastMessageAt: Date
+  ): Promise<void> {
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { lastMessageAt },
+    });
   }
 }

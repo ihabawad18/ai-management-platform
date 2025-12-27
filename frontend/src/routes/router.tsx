@@ -24,6 +24,7 @@ export const router = createBrowserRouter([
       },
       { path: "agents", element: <AgentConfigurations /> },
       { path: "chat", element: <Chat /> },
+      { path: "chat/:agentId", element: <Chat /> },
       { path: "*", element: <div>404 – Not Found</div> },
     ],
   },

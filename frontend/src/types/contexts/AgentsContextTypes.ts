@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
-import type { AgentConfig } from "@/types/models/AgentModel";
+import type { AgentModel } from "@/types/models/Agent.model";
 
 export interface AgentsContextProps {
-  agents: AgentConfig[];
-  updateAgent: (agent: AgentConfig) => void;
+  agents: AgentModel[];
+  updateAgent: (agent: AgentModel) => void;
   deleteAgent: (id: string) => void;
-  createAgent: (agent: Omit<AgentConfig, "id">) => AgentConfig;
+  createAgent: (agent: Omit<AgentModel, "id">) => AgentModel;
 }
 
 export interface AgentsProviderProps {

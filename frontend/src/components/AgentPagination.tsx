@@ -17,7 +17,7 @@ const AgentPagination = ({ currentPage, totalPages, onPageChange }: Props) => {
         size="sm"
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
-        className="border-gray-300 text-gray-700"
+        className="border-gray-300 text-gray-700 cursor-pointer"
       >
         <ChevronLeft className="h-4 w-4 mr-1" />
         Previous
@@ -31,8 +31,8 @@ const AgentPagination = ({ currentPage, totalPages, onPageChange }: Props) => {
             onClick={() => onPageChange(page)}
             className={
               currentPage === page
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                ? "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+                : "border-gray-300 text-gray-700 hover:bg-gray-100 cursor-pointer"
             }
           >
             {page}
@@ -44,7 +44,7 @@ const AgentPagination = ({ currentPage, totalPages, onPageChange }: Props) => {
         size="sm"
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage === totalPages}
-        className="border-gray-300 text-gray-700"
+        className="border-gray-300 text-gray-700 cursor-pointer"
       >
         Next
         <ChevronRight className="h-4 w-4 ml-1" />

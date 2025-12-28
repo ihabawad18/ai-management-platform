@@ -56,6 +56,10 @@ export default function Chat() {
   const [agents, setAgents] = useState<AgentItem[]>([]);
   const [agentsLoading, setAgentsLoading] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>("");
+  const handleAgentChange = (value: string) => {
+    setSendError(null);
+    setSelectedAgentId(value);
+  };
 
   const [conversations, setConversations] = useState<ConversationView[]>([]);
   const [selectedConversationId, setSelectedConversationId] =
@@ -64,6 +68,7 @@ export default function Chat() {
   const [conversationsPage, setConversationsPage] = useState(1);
   const [hasMoreConversations, setHasMoreConversations] = useState(false);
   const [messageInput, setMessageInput] = useState("");
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const [messagesPaging, setMessagesPaging] = useState<
     Record<string, { page: number; totalPages: number; loading: boolean }>
@@ -71,8 +76,6 @@ export default function Chat() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const [assistantTyping, setAssistantTyping] = useState(false);
-  const [sendError, setSendError] = useState<string | null>(null);
-
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [newConversationTitle, setNewConversationTitle] = useState("");
   const [conversationForm, setConversationForm] = useState<{ title: string }>({
@@ -130,6 +133,7 @@ export default function Chat() {
 
   useEffect(() => {
     if (selectedAgentId) {
+      setSendError(null);
       navigate(`/chat/${selectedAgentId}`, { replace: true });
       setSelectedConversationId("");
       setConversations([]);
@@ -329,11 +333,15 @@ export default function Chat() {
       setConversations((prev) =>
         prev.map((c) =>
           c.id === convoId
-            ? { ...c, messages: c.messages.filter((m) => m.id !== tempId) }
+            ? {
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === tempId ? { ...m, pending: false } : m
+                ),
+              }
             : c
         )
       );
-      setMessageInput(userMessage.content);
     } finally {
       setAssistantTyping(false);
       setSending(false);
@@ -359,6 +367,7 @@ export default function Chat() {
       };
       setConversations((prev) => sortConversations([mapped, ...prev]));
       setSelectedConversationId(mapped.id);
+      setSendError(null);
       setNewConversationTitle("");
       setConversationForm({ title: "" });
       setIsCreatingConversation(false);
@@ -440,6 +449,7 @@ export default function Chat() {
 
   const handleSelectConversation = (conversationId: string) => {
     if (!conversationId || conversationId === selectedConversationId) return;
+    setSendError(null);
     setSelectedConversationId(conversationId);
     // Clear messages for a fresh fetch
     setConversations((prev) =>
@@ -485,7 +495,7 @@ export default function Chat() {
               </div>
               <Select
                 value={selectedAgentId}
-                onValueChange={setSelectedAgentId}
+                onValueChange={handleAgentChange}
                 disabled={agentsLoading}
               >
                 <SelectTrigger className="border bg-white text-gray-900">

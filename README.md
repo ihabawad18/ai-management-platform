@@ -41,3 +41,7 @@
 - `GET /api/llm/models` — list available LLM model identifiers.
 - `GET /api/dashboard/metrics` (SSE) — stream dashboard metrics via server-sent events.
 - `GET /api/docs` — Swagger UI for the full REST API documentation.
+
+## Note
+
+- Testing used the `gpt-5-nano` model because the provided OpenAI key didn’t have access to higher-tier models. Use a paid key if you want to run others.

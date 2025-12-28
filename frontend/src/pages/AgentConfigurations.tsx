@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Loader2, Plus } from "lucide-react";
 import AgentCard from "@/components/AgentCard";
@@ -18,6 +19,7 @@ import {
 import type { AgentUI } from "@/types/components/AgentCard.types";
 
 export default function AgentConfigurations() {
+  const navigate = useNavigate();
   const { startConversationForAgent } = useConversations();
   const { models: llmModels } = useLlmModels();
 
@@ -172,6 +174,7 @@ export default function AgentConfigurations() {
       model: agent.modelName,
       systemPrompt: agent.systemPrompt,
     });
+    navigate(`/chat/${agent.id}`);
   };
 
   const isDirty =

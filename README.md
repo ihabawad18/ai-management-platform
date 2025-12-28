@@ -24,18 +24,20 @@
 - **Real-Time Updates:** Server-Sent Events (SSE) are used to stream live dashboard metrics to the frontend.
 - **Database:** PostgreSQL with Prisma ORM for schema management and migrations.
 - **API Communication:** Centralized API service on the frontend for consistent request handling.
+- **API Docs:** Swagger UI exposed by the backend (reachable at `/api/docs`) for interactive schemas and trying requests.
 - **Containerization:** Docker and Docker Compose are used to run the frontend, backend, and database in a unified local environment.
 
 ## API Endpoints
 
-- `GET /agent-configurations` — list all agent configs.
-- `POST /agent-configurations` — create an agent config (`name`, `model`, `systemPrompt`).
-- `GET /agent-configurations/:id` — fetch a single agent config.
-- `PATCH /agent-configurations/:id` — update an agent config fields.
-- `DELETE /agent-configurations/:id` — remove an agent config.
-- `GET /agents/:agentId/conversations` — list conversations for an agent (supports pagination).
-- `POST /conversations` — create a conversation for an agent (`agentId`, `title`).
-- `GET /conversations/:conversationId/messages` — list messages in a conversation (supports pagination).
-- `POST /conversations/:conversationId/messages` — send a user message; returns user + assistant replies.
-- `GET /llm/models` — list available LLM model identifiers.
-- `GET /dashboard/metrics` (SSE) — stream dashboard metrics via server-sent events.
+- `GET /api/agent-configurations` — list all agent configs.
+- `POST /api/agent-configurations` — create an agent config (`name`, `model`, `systemPrompt`).
+- `GET /api/agent-configurations/:id` — fetch a single agent config.
+- `PATCH /api/agent-configurations/:id` — update an agent config fields.
+- `DELETE /api/agent-configurations/:id` — remove an agent config.
+- `GET /api/agents/:agentId/conversations` — list conversations for an agent (supports pagination).
+- `POST /api/conversations` — create a conversation for an agent (`agentId`, `title`).
+- `GET /api/conversations/:conversationId/messages` — list messages in a conversation (supports pagination).
+- `POST /api/conversations/:conversationId/messages` — send a user message; returns user + assistant replies.
+- `GET /api/llm/models` — list available LLM model identifiers.
+- `GET /api/dashboard/metrics` (SSE) — stream dashboard metrics via server-sent events.
+- `GET /api/docs` — Swagger UI for the full REST API documentation.

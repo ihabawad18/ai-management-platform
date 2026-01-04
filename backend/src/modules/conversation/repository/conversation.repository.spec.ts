@@ -36,7 +36,10 @@ describe("ConversationRepository", () => {
 
     expect(findMany).toHaveBeenCalledWith({
       where: { agentConfigurationId: "a1" },
-      orderBy: [{ lastMessageAt: "desc" }, { createdAt: "desc" }],
+      orderBy: [
+        { lastMessageAt: { sort: "desc", nulls: "last" } },
+        { createdAt: "desc" },
+      ],
       include: {
         messages: {
           orderBy: { createdAt: "desc" },

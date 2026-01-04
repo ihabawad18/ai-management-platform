@@ -69,6 +69,7 @@ describe("ConversationService", () => {
     expect(conversationRepository.create).toHaveBeenCalledWith({
       agentConfigurationId: "a1",
       title: "T",
+      lastMessageAt: expect.any(Date),
     });
     expect(result.id).toBe("c1");
   });

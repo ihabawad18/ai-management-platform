@@ -62,7 +62,7 @@ model Conversation{
 model Message {
   id String @id @default(uuid()) @map("id")
   conversationId String @map("conversation_id")
-  conversation Conversation @relation(fields: [conversationId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   role MessageRole @map("role")
   content String @map("content")
   createdAt DateTime @default(now()) @map("created_at")

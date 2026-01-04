@@ -9,7 +9,11 @@ export class AgentConfigurationsService {
   constructor(private readonly repo: AgentConfigurationsRepository) {}
 
   async list(): Promise<AgentConfiguration[]> {
-    return this.repo.findAll();
+    return this.repo.findAll({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
   }
 
   async getById(id: string): Promise<AgentConfiguration> {

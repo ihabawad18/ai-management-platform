@@ -37,8 +37,13 @@ describe("MessageService", () => {
     findById: jest.MockedFunction<
       WithoutThis<ConversationRepository["findById"]>
     >;
+    updateLastMessageAt: jest.MockedFunction<
+      WithoutThis<ConversationRepository["updateLastMessageAt"]>
+    >;
   } = {
     findById: createMockFn<WithoutThis<ConversationRepository["findById"]>>(),
+    updateLastMessageAt:
+      createMockFn<WithoutThis<ConversationRepository["updateLastMessageAt"]>>(),
   };
   const agentConfigurationsRepository: {
     findById: jest.MockedFunction<
@@ -101,6 +106,7 @@ describe("MessageService", () => {
       .mockResolvedValueOnce({
         id: "m-assistant",
         role: MessageRole.assistant,
+        createdAt: new Date("2024-01-01T00:00:00Z"),
       } as any);
     messageRepository.findByConversation.mockResolvedValue([
       { role: MessageRole.user, content: "hello" } as any,
@@ -133,6 +139,10 @@ describe("MessageService", () => {
       role: MessageRole.assistant,
       content: "assistant reply",
     });
+    expect(conversationRepository.updateLastMessageAt).toHaveBeenCalledWith(
+      "c1",
+      expect.any(Date)
+    );
     expect(usageMetricsService.recordInteraction).toHaveBeenCalledTimes(1);
     const interaction = usageMetricsService.recordInteraction.mock.calls[0][0];
     expect(interaction).toMatchObject({
